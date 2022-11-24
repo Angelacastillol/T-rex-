@@ -10,6 +10,7 @@ var play = 1;
 var end = 0;
 var restartImg, restart;
 var gameOverImg, gameOver;
+var NubesGroup;
 
 function preload() {
     trex_running = loadAnimation("trex1.png", "trex3.png", "trex4.png");
@@ -36,14 +37,14 @@ function setup() {
     ground = createSprite(200,180,400,20);
     ground.addImage("ground",groundImage);
     ground.x = ground.width /2;
-    ground.velocityX = -4;
     invisibleGround = createSprite(300,190,600,10);
     invisibleGround.visible=false;
     obstacleGroup = createGroup();
-    restart = createSprite(300,140);
-    gameOver = createSprite (300,100);
+    restart = createSprite(300,145);
+    gameOver = createSprite (300,70);
     restart.addImage(restartImg);
     gameOver.addImage(gameOverImg);
+    NubesGroup = createGroup();
 }
 
 function draw() {
@@ -63,34 +64,53 @@ function draw() {
     if(gameState == "play"){
         trex.velocityX = 0;
         text("presiona la tecla espacio para empezar",200,115);
+        gameOver.visible = false;
+        restart.visible = false;
+
+        ground.velocityX = -(4 + 3* score/100);
+        score = score+Math.round(frameCount/60);
         
-    }else if(gameState == "over"){
-        text ("Game Over",200,115);
-        trex.remove();
-        ground.remove();
-        obstacleGroup.remove();
-    }
+        if(ground.x < 0){
+            ground.x=ground.width/2;
+         }
+        
+       
 
-
-    if(trex.isTouching(obstacleGroup)){
-        noLifes();
-    }
-
-
-    if(ground.x < 0){
-        ground.x=ground.width/2;
-     }
-
-    //jump when the space button is pressed
-    if (keyDown("space") && trex.y>=128) {
+        //jump when the space button is pressed
+        if (keyDown("space") && trex.y>=128) {
 
         trex.velocityY = -10;
+        }
+        trex.velocityY = trex.velocityY + 0.8;
+
+        nubes();
+        aparecer_obstaculos();
+
+        if(trex.isTouching(obstacleGroup)){
+            noLifes();
+            gameState= "over";
+        }
+
+        }else if(gameState == "over"){
+        //text ("Game Over",200,115);
+       
+        gameOver.visible = true;
+        restart.visible = true;
+        
+        ground.velocityX = 0;
+        //trex.changeAnimation("collide",trex_collide);
+        obstacleGroup.setVelocityXEach(0);
+        NubesGroup.setVelocityXEach(0);
+        obstacleGroup.setLifetimeEach(-1);
+        NubesGroup.setLifetimeEach(-1);
+        /*trex.remove();
+        ground.remove();
+        obstacleGroup.remove();*/
+        
     }
-    trex.velocityY = trex.velocityY + 0.8;
+
     //console.log(trex.y);
     trex.collide(invisibleGround);
-    nubes();
-    aparecer_obstaculos();
     drawSprites();
 
 }
@@ -99,7 +119,7 @@ function nubes(){
     if(frameCount%85==0){
       cloud= createSprite(650,100,40,10);
       cloud.addImage(nube);
-      cloud.scale=0.2;
+      cloud.scale=1;
       cloud.velocityX=-4;
       cloud.y=Math.round(random(10,80));
       console.log(cloud);
@@ -107,6 +127,7 @@ function nubes(){
       trex.depth = trex.depth+1;
       //tiempo de vida
       cloud.lifetime = 250;
+      NubesGroup.add(cloud);
     }
 }
 
